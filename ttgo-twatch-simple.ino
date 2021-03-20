@@ -21,6 +21,9 @@ bool powerOff = false;
 byte xcolon = 0;
 uint32_t lastOnTime = 0;
 
+bool batteryIsCharging = false;
+bool batteryIsFull = false;
+
 void displayTimeAndBattery()
 {
   int battery_percentage = power->getBattPercentage();
@@ -39,7 +42,20 @@ void displayTimeAndBattery()
   }
 
   tft->print(battery_percentage);
-  tft->println("%");
+  tft->print("%");
+
+  if (batteryIsCharging)
+  {
+    tft->println(" charging");
+  }
+  else if (batteryIsFull)
+  {
+    tft->println(" full");
+  }
+  else
+  {
+    tft->println("         ");
+  }
 
   tft->setTextSize(1);
 
@@ -155,7 +171,7 @@ void setup(void)
   }, FALLING);
 
   power->adc1Enable(AXP202_BATT_VOL_ADC1 | AXP202_BATT_CUR_ADC1 | AXP202_VBUS_VOL_ADC1 | AXP202_VBUS_CUR_ADC1, AXP202_ON);
-  power->enableIRQ(AXP202_PEK_SHORTPRESS_IRQ | AXP202_PEK_LONGPRESS_IRQ, true);
+  power->enableIRQ(AXP202_PEK_SHORTPRESS_IRQ | AXP202_PEK_LONGPRESS_IRQ | AXP202_CHARGING_FINISHED_IRQ | AXP202_CHARGING_IRQ, true);
   power->clearIRQ();
 }
 
@@ -166,6 +182,24 @@ void loop(void)
     irq = false;
 
     power->readIRQ();
+
+    if (power->isChargingIRQ())
+    {
+      batteryIsCharging = true;
+    }
+    else
+    {
+      batteryIsCharging = false;
+    }
+
+    if (power->isChargingDoneIRQ())
+    {
+      batteryIsFull = true;
+    }
+    else
+    {
+      batteryIsFull = false;
+    }
 
     if (power->isPEKShortPressIRQ() )
     {
