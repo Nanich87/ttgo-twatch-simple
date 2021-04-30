@@ -11,6 +11,7 @@
 #define COLOR_GREY 0x39C4
 
 #define DEFAULT_SCREEN_TIMEOUT 5000
+#define LOOP_DELAY 1000
 
 TTGOClass *ttgo;
 TFT_eSPI *tft ;
@@ -20,9 +21,6 @@ bool irq = false;
 bool powerOff = false;
 byte xcolon = 0;
 uint32_t lastOnTime = 0;
-
-bool batteryIsCharging = false;
-bool batteryIsFull = false;
 
 void displayTimeAndBattery()
 {
@@ -44,17 +42,21 @@ void displayTimeAndBattery()
   tft->print(battery_percentage);
   tft->print("%");
 
-  if (batteryIsCharging)
+  if (battery_percentage < 25)
   {
-    tft->println(" charging");
+    tft->println(" [*   ]");
   }
-  else if (batteryIsFull)
+  else if (battery_percentage < 50)
   {
-    tft->println(" full");
+    tft->println(" [**  ]");
+  }
+  else if (battery_percentage < 75)
+  {
+    tft->println(" [*** ]");
   }
   else
   {
-    tft->println("         ");
+    tft->println(" [****]");
   }
 
   tft->setTextSize(1);
@@ -171,8 +173,11 @@ void setup(void)
   }, FALLING);
 
   power->adc1Enable(AXP202_BATT_VOL_ADC1 | AXP202_BATT_CUR_ADC1 | AXP202_VBUS_VOL_ADC1 | AXP202_VBUS_CUR_ADC1, AXP202_ON);
-  power->enableIRQ(AXP202_PEK_SHORTPRESS_IRQ | AXP202_PEK_LONGPRESS_IRQ | AXP202_CHARGING_FINISHED_IRQ | AXP202_CHARGING_IRQ, true);
+  power->enableIRQ(AXP202_PEK_SHORTPRESS_IRQ | AXP202_PEK_LONGPRESS_IRQ, true);
   power->clearIRQ();
+
+  ttgo->rtc->check();
+  ttgo->rtc->syncToSystem();
 }
 
 void loop(void)
@@ -183,25 +188,7 @@ void loop(void)
 
     power->readIRQ();
 
-    if (power->isChargingIRQ())
-    {
-      batteryIsCharging = true;
-    }
-    else
-    {
-      batteryIsCharging = false;
-    }
-
-    if (power->isChargingDoneIRQ())
-    {
-      batteryIsFull = true;
-    }
-    else
-    {
-      batteryIsFull = false;
-    }
-
-    if (power->isPEKShortPressIRQ() )
+    if (power->isPEKShortPressIRQ())
     {
       if (ttgo->bl->isOn())
       {
@@ -212,7 +199,8 @@ void loop(void)
         wakeUpFromSleepMode();
       }
     }
-    else if (power->isPEKLongtPressIRQ() )
+
+    if (power->isPEKLongtPressIRQ())
     {
       powerOff = true;
     }
@@ -233,5 +221,5 @@ void loop(void)
     enterSleepMode();
   }
 
-  delay(1000);
+  delay(LOOP_DELAY);
 }
