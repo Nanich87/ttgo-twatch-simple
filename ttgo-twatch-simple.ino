@@ -105,7 +105,7 @@ void displayTimeAndBattery()
 
   if (dday < 10)
   {
-    tft->print(" ");
+    tft->print("0");
   }
 
   tft->print(dday);
