@@ -102,8 +102,20 @@ void displayTimeAndBattery()
 
   tft->setTextSize(3);
   tft->setCursor(10, 210);
+
+  if (dday < 10)
+  {
+    tft->print(" ");
+  }
+
   tft->print(dday);
   tft->print(".");
+
+  if (mmonth < 10)
+  {
+    tft->print("0");
+  }
+
   tft->print(mmonth);
   tft->print(".");
   tft->print(yyear);
