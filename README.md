@@ -1,1 +1,1 @@
-# TTGO TWatch 2020 V1
+# TTGO T-Watch 2020 V1
