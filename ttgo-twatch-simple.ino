@@ -17,6 +17,8 @@ TTGOClass *ttgo;
 TFT_eSPI *tft ;
 AXP20X_Class *power;
 
+bool isBluetoothEnabled = false;
+bool isWifiEnabled = false;
 bool irq = false;
 bool powerOff = false;
 byte xcolon = 0;
@@ -59,7 +61,25 @@ void displayTimeAndBattery()
     tft->println(" [****]");
   }
 
+  int bluetoothButtonBackgroundColor = isBluetoothEnabled ? TFT_BLUE : COLOR_GREY;
+  tft->fillRect(10, 35, 105, 40, bluetoothButtonBackgroundColor);
+
+  int wifiButtonBackgroundColor = isWifiEnabled ? TFT_BLUE : COLOR_GREY;
+  tft->fillRect(125, 35, 105, 40, wifiButtonBackgroundColor);
+
+  tft->setTextSize(3);
+  tft->setTextColor(TFT_WHITE, bluetoothButtonBackgroundColor);
+
+  tft->setCursor(50, 45);
+  tft->print("BT");
+
+  tft->setTextColor(TFT_WHITE, wifiButtonBackgroundColor);
+
+  tft->setCursor(145, 45);
+  tft->print("WiFi");
+
   tft->setTextSize(1);
+  tft->setTextColor(COLOR_ORANGE, TFT_BLACK);
 
   RTC_Date dateTimeNow = ttgo->rtc->getDateTime();
 
@@ -191,7 +211,7 @@ void setup(void)
   ttgo->rtc->check();
   ttgo->rtc->syncToSystem();
 }
-
+// wait for user to release
 void loop(void)
 {
   if (irq)
@@ -223,6 +243,27 @@ void loop(void)
   if (powerOff)
   {
     enterDeepSleepMode();
+  }
+
+  int16_t x, y;
+  if (ttgo->getTouch(x, y))
+  {
+    while (ttgo->getTouch(x, y))
+    {
+    }
+
+    if (y > 25 && y < 85)
+    {
+      if (x > 10 && x < 115)
+      {
+        isBluetoothEnabled = !isBluetoothEnabled;
+      }
+
+      if (x > 125 && x < 230)
+      {
+        isWifiEnabled = !isWifiEnabled;
+      }
+    }
   }
 
   displayTimeAndBattery();
