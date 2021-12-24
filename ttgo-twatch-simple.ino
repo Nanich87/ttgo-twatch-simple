@@ -44,7 +44,11 @@ void displayTimeAndBattery()
   tft->print(battery_percentage);
   tft->print("%");
 
-  if (battery_percentage < 25)
+  if (battery_percentage < 10)
+  {
+    tft->println(" [    ]");
+  }
+  else if (battery_percentage < 25)
   {
     tft->println(" [*   ]");
   }
@@ -211,7 +215,7 @@ void setup(void)
   ttgo->rtc->check();
   ttgo->rtc->syncToSystem();
 }
-// wait for user to release
+
 void loop(void)
 {
   if (irq)
@@ -243,6 +247,7 @@ void loop(void)
   if (powerOff)
   {
     enterDeepSleepMode();
+    return;
   }
 
   int16_t x, y;
