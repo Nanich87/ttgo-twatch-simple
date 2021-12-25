@@ -19,13 +19,66 @@ AXP20X_Class *power;
 
 bool isBluetoothEnabled = false;
 bool isWifiEnabled = false;
+bool showMenu = false;
+bool redraw = false;
 bool irq = false;
 bool powerOff = false;
 byte xcolon = 0;
 uint32_t lastOnTime = 0;
 
+void displayMenu()
+{
+  if (redraw)
+  {
+    tft->fillScreen(COLOR_GREY);
+    redraw = false;
+  }
+
+  tft->setTextSize(2);
+  tft->setTextColor(TFT_WHITE, COLOR_ORANGE);
+
+  int color;
+
+  // +
+  tft->fillCircle(120, 50, 30, COLOR_ORANGE);
+  tft->setCursor(115, 45);
+  tft->print("+");
+
+  // WiFi
+  color = isWifiEnabled ? TFT_BLUE : COLOR_ORANGE;
+  tft->fillCircle(120, 120, 30, color);
+  color = isWifiEnabled ? TFT_WHITE : COLOR_ORANGE;
+  tft->setTextColor(TFT_WHITE, color);
+  tft->setCursor(100, 112);
+  tft->print("WiFi");
+
+  // -
+  tft->fillCircle(120, 190, 30, COLOR_ORANGE);
+  tft->setCursor(115, 185);
+  tft->print("-");
+
+  // BT
+  color = isBluetoothEnabled ? TFT_BLUE : COLOR_ORANGE;
+  tft->fillCircle(50, 120, 30, color);
+  color = isBluetoothEnabled ? TFT_WHITE : COLOR_ORANGE;
+  tft->setTextColor(TFT_WHITE, color);
+  tft->setCursor(40, 112);
+  tft->print("BT");
+
+  // GPS
+  tft->fillCircle(190, 120, 30, COLOR_ORANGE);
+  tft->setCursor(175, 112);
+  tft->print("GPS");
+}
+
 void displayTimeAndBattery()
 {
+  if (redraw)
+  {
+    tft->fillScreen(TFT_BLACK);
+    redraw = false;
+  }
+
   int battery_percentage = power->getBattPercentage();
 
   tft->setTextSize(2);
@@ -64,23 +117,6 @@ void displayTimeAndBattery()
   {
     tft->println(" [****]");
   }
-
-  int bluetoothButtonBackgroundColor = isBluetoothEnabled ? TFT_BLUE : COLOR_GREY;
-  tft->fillRect(10, 35, 105, 40, bluetoothButtonBackgroundColor);
-
-  int wifiButtonBackgroundColor = isWifiEnabled ? TFT_BLUE : COLOR_GREY;
-  tft->fillRect(125, 35, 105, 40, wifiButtonBackgroundColor);
-
-  tft->setTextSize(3);
-  tft->setTextColor(TFT_WHITE, bluetoothButtonBackgroundColor);
-
-  tft->setCursor(50, 45);
-  tft->print("BT");
-
-  tft->setTextColor(TFT_WHITE, wifiButtonBackgroundColor);
-
-  tft->setCursor(145, 45);
-  tft->print("WiFi");
 
   tft->setTextSize(1);
   tft->setTextColor(COLOR_ORANGE, TFT_BLACK);
@@ -257,21 +293,38 @@ void loop(void)
     {
     }
 
-    if (y > 25 && y < 85)
+    if (y <= 80)
     {
-      if (x > 10 && x < 115)
+      showMenu = false;
+      redraw = true;
+    }
+    else if (y > 80 && y < 160)
+    {
+      if (x > 10 && x < 90)
       {
         isBluetoothEnabled = !isBluetoothEnabled;
       }
 
-      if (x > 125 && x < 230)
+      if (x > 80 && x < 160)
       {
         isWifiEnabled = !isWifiEnabled;
       }
     }
+    else
+    {
+      showMenu = true;
+      redraw = true;
+    }
   }
 
-  displayTimeAndBattery();
+  if (showMenu)
+  {
+    displayMenu();
+  }
+  else
+  {
+    displayTimeAndBattery();
+  }
 
   uint32_t currentMillis = millis();
   if (currentMillis > (lastOnTime + DEFAULT_SCREEN_TIMEOUT))
