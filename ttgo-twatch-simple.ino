@@ -37,18 +37,14 @@ void displayMenu()
   tft->setTextSize(2);
   tft->setTextColor(TFT_WHITE, COLOR_ORANGE);
 
-  int color;
-
   // +
   tft->fillCircle(120, 50, 30, COLOR_ORANGE);
   tft->setCursor(115, 45);
   tft->print("+");
 
   // WiFi
-  color = isWifiEnabled ? TFT_BLUE : COLOR_ORANGE;
-  tft->fillCircle(120, 120, 30, color);
-  color = isWifiEnabled ? TFT_WHITE : COLOR_ORANGE;
-  tft->setTextColor(TFT_WHITE, color);
+  tft->fillCircle(120, 120, 30, isWifiEnabled ? TFT_BLUE : COLOR_ORANGE);
+  tft->setTextColor(TFT_WHITE, isWifiEnabled ? TFT_WHITE : COLOR_ORANGE);
   tft->setCursor(100, 112);
   tft->print("WiFi");
 
@@ -58,10 +54,8 @@ void displayMenu()
   tft->print("-");
 
   // BT
-  color = isBluetoothEnabled ? TFT_BLUE : COLOR_ORANGE;
-  tft->fillCircle(50, 120, 30, color);
-  color = isBluetoothEnabled ? TFT_WHITE : COLOR_ORANGE;
-  tft->setTextColor(TFT_WHITE, color);
+  tft->fillCircle(50, 120, 30, isBluetoothEnabled ? TFT_BLUE : COLOR_ORANGE);
+  tft->setTextColor(TFT_WHITE, isBluetoothEnabled ? TFT_WHITE : COLOR_ORANGE);
   tft->setCursor(40, 112);
   tft->print("BT");
 
